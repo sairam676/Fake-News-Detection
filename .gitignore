@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+.venv/
+
+# Data files (optional — if too big)
+data/
+
+# Models
+models/
+output/
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
