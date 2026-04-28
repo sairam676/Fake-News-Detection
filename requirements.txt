@@ -1,6 +1,26 @@
+# ML + Data
+scikit-learn
 pandas
 numpy
-scikit-learn
 joblib
-scipy
 matplotlib
+
+# NLP + Transformers
+transformers
+torch
+datasets
+lime
+sentencepiece
+
+# API + Server
+fastapi
+uvicorn
+python-dotenv
+groq
+
+# WhatsApp
+twilio
+
+# Web scraping (optional)
+requests
+beautifulsoup4
