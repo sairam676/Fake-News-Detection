@@ -49,7 +49,7 @@ def send_message(to_number: str, message: str):
 def format_reply(result: dict) -> str:
     """
     Format pipeline result into a clean WhatsApp message.
-    Same logic as in main.py — kept here for standalone testing.
+    No LLM — ML ensemble only. No llm_reason field.
     """
     if not result["success"]:
         return f"Sorry, could not process your message.\nError: {result['error']}"
@@ -58,14 +58,15 @@ def format_reply(result: dict) -> str:
     confidence  = result["confidence"]
     risk        = result["risk"]
     explanation = result["explanation"]
-    llm_reason  = result["llm_reason"]
     sources     = result["sources"]
 
     emoji = {
         "FAKE"        : "🔴",
-        "REAL"        : "🟢",
+        "LIKELY FAKE" : "🟠",
+        "MISLEADING"  : "🟠",
         "UNCERTAIN"   : "🟡",
-        "LIKELY FAKE" : "🟠"
+        "REAL"        : "🟢",
+        "OUT OF SCOPE": "⚪"
     }.get(verdict, "⚪")
 
     lines = [
@@ -74,11 +75,10 @@ def format_reply(result: dict) -> str:
         f"Risk: {risk}",
         f"",
         f"_{explanation}_",
-        f"",
-        f"*Fact-check:* {llm_reason}",
     ]
 
     if sources:
+        lines.append(f"")
         lines.append(f"*Sources found:* {', '.join(sources)}")
 
     if "word_highlights" in result:
@@ -98,20 +98,16 @@ def format_reply(result: dict) -> str:
 # ── Test formatting standalone ────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    # Fake result to test formatting
     dummy_result = {
-        "success"    : True,
-        "input_type" : "short_forward",
-        "verdict"    : "FAKE",
-        "confidence" : "87%",
-        "risk"       : "HIGH",
-        "explanation": "Both writing style and fact-check confirm this is fake.",
-        "llm_reason" : "AIIMS has not made any such statement about lemon juice.",
-        "sources"    : ["AIIMS"],
+        "success"     : True,
+        "input_type"  : "short_forward",
+        "verdict"     : "FAKE",
+        "confidence"  : "87%",
+        "risk"        : "HIGH",
+        "explanation" : "Multiple fake news signals detected. Sensational language confirmed.",
+        "sources"     : ["AIIMS"],
         "model_scores": {
-            "ml_model": {"label": "FAKE", "score": 0.0004},
-            "llm"     : {"label": "FAKE", "score": 0.2}
+            "ml_ensemble": {"label": "FAKE", "score": 0.12}
         }
     }
-
     print(format_reply(dummy_result))

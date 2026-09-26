@@ -1,0 +1,60 @@
+{
+  "resnet18": {
+    "input_dim": 512,
+    "accuracy": 0.8875,
+    "macro_f1": 0.887341574088562,
+    "precision": 0.8913448936384716,
+    "recall": 0.8882623590307819,
+    "loss": 0.07420663210749626
+  },
+  "baseline": {
+    "input_dim": 384,
+    "accuracy": 0.9325,
+    "macro_f1": 0.9324995781223633,
+    "precision": 0.9326182618261827,
+    "recall": 0.9326723512790378,
+    "loss": 0.010451957497745752
+  },
+  "model_a": {
+    "input_dim": 64,
+    "accuracy": 0.62,
+    "macro_f1": 0.6196576919227305,
+    "precision": 0.6199053082492046,
+    "recall": 0.6196894301217775,
+    "loss": 0.5893314018249511
+  },
+  "model_b": {
+    "input_dim": 448,
+    "accuracy": 0.93,
+    "macro_f1": 0.9299369432489241,
+    "precision": 0.9329981143934633,
+    "recall": 0.9306593983646321,
+    "loss": 0.01791928602196276
+  },
+  "model_c": {
+    "input_dim": 512,
+    "accuracy": 0.925,
+    "macro_f1": 0.9249831212022706,
+    "precision": 0.9262005561261555,
+    "recall": 0.9254332224750569,
+    "loss": 0.06732813513278961
+  },
+  "all": {
+    "input_dim": 576,
+    "accuracy": 0.93,
+    "macro_f1": 0.9299929992999301,
+    "precision": 0.9299732493312333,
+    "recall": 0.9300592633342502,
+    "loss": 0.030891534686088563
+  },
+  "open_set_test": {
+    "predicted_label": "Real_Photo",
+    "confidence": 0.9707393050193787,
+    "is_known_generator": true,
+    "raw_prediction": "Real_Photo",
+    "class_probabilities": {
+      "Real_Photo": 0.9707393050193787,
+      "AI_Diffusion_Synthetic": 0.029260724782943726
+    }
+  }
+}

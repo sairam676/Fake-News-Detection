@@ -1,0 +1,63 @@
+{
+  "resnet18": {
+    "input_dim": 512,
+    "accuracy": 0.8125,
+    "macro_f1": 0.7333333333333333,
+    "precision": 0.7,
+    "recall": 0.8,
+    "loss": 0.19717602415751384
+  },
+  "baseline": {
+    "input_dim": 384,
+    "accuracy": 0.96875,
+    "macro_f1": 0.9664335664335665,
+    "precision": 0.9714285714285713,
+    "recall": 0.9666666666666668,
+    "loss": 0.596652784655171
+  },
+  "model_a": {
+    "input_dim": 64,
+    "accuracy": 0.25,
+    "macro_f1": 0.11636363636363636,
+    "precision": 0.1,
+    "recall": 0.22857142857142856,
+    "loss": 1.1695704549871466
+  },
+  "model_b": {
+    "input_dim": 448,
+    "accuracy": 0.96875,
+    "macro_f1": 0.9664335664335665,
+    "precision": 0.9714285714285715,
+    "recall": 0.9666666666666666,
+    "loss": 0.3296679018005248
+  },
+  "model_c": {
+    "input_dim": 512,
+    "accuracy": 0.9375,
+    "macro_f1": 0.9314285714285715,
+    "precision": 0.95,
+    "recall": 0.9333333333333333,
+    "loss": 0.43889864638287535
+  },
+  "all": {
+    "input_dim": 576,
+    "accuracy": 0.9375,
+    "macro_f1": 0.9314285714285715,
+    "precision": 0.95,
+    "recall": 0.9333333333333333,
+    "loss": 0.3045151921049241
+  },
+  "open_set_test": {
+    "predicted_label": "BigGAN",
+    "confidence": 0.7134772539138794,
+    "is_known_generator": true,
+    "raw_prediction": "BigGAN",
+    "class_probabilities": {
+      "BigGAN": 0.7134772539138794,
+      "Midjourney_v5": 0.09375490248203278,
+      "Real_ImageNet": 0.0026738992892205715,
+      "StableDiffusion_v1_5": 0.18396498262882233,
+      "Wukong": 0.0061290510930120945
+    }
+  }
+}

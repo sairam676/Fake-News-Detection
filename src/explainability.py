@@ -54,18 +54,19 @@ def _load_models():
 def _make_predict_fn(vectorizer, model):
     """
     Returns a prediction function LIME can call.
-    Combines TF-IDF + handcrafted features to match training feature shape.
+    Combines TF-IDF (15000) + handcrafted (13) = 15013 features.
+    Must match training shape exactly — this was the source of the crash.
     """
     import scipy.sparse as sp
-    import sys
-    import os
+    import sys, os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     from train import extract_handcrafted
 
     def predict_proba(texts):
-        tfidf    = vectorizer.transform(texts)
-        hc       = sp.csr_matrix(extract_handcrafted(texts))
-        features = sp.hstack([tfidf, hc])
+        # texts is always a list of strings (LIME perturbs the input)
+        tfidf    = vectorizer.transform(texts)          # (n, 15000)
+        hc       = sp.csr_matrix(extract_handcrafted(texts))  # (n, 13)
+        features = sp.hstack([tfidf, hc])              # (n, 15013) ← matches training
         return model.predict_proba(features)
 
     return predict_proba
@@ -102,8 +103,16 @@ def explain(text: str) -> dict:
         labels       = (0, 1)   # 0=FAKE, 1=REAL
     )
 
-    # Get prediction on original text
-    features   = vectorizer.transform([text])
+    # Get prediction on original text using FULL feature set (TF-IDF + handcrafted)
+    import scipy.sparse as sp
+    import sys as _sys
+    _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from train import extract_handcrafted as _extract_hc
+
+    tfidf_feats = vectorizer.transform([text])
+    hc_feats    = sp.csr_matrix(_extract_hc([text]))
+    features    = sp.hstack([tfidf_feats, hc_feats])
+
     proba      = model.predict_proba(features)[0]
     pred_label = CLASS_NAMES[np.argmax(proba)]
     confidence = round(float(np.max(proba)), 4)
