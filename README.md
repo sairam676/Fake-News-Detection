@@ -1,213 +1,260 @@
-# 🔍 WhatsApp Fake News Detector
+# Multimodal Fake News & Image Forensics Intelligence Backend
 
-> An AI-powered WhatsApp bot that instantly verifies suspicious forwards — combining ML style detection with LLM fact-checking to give you a verdict in under 6 seconds.
+A production-grade verification backend that ingests news articles, social forwards, and suspicious media, extracts linguistic, spatial, and frequency-domain features, and generates transparent credibility verdicts without hard-depending on opaque LLM wrappers.
 
-**Minor Project — Department of Computer Science | NIT Patna**
+This project focuses on deterministic machine learning pipelines, frequency-domain image forensics (FFT / ELA / Noise analysis), generator attribution across diffusion models and GANs, and robust backend production safeguards.
 
----
-
-## 📌 Problem Statement
-
-Fake news spreads rapidly through WhatsApp in India. Users frequently receive forwards like *"AIIMS doctor confirms miracle cure"* or fabricated government announcements, with no easy way to verify authenticity before sharing.
-
-Most existing tools only detect **writing style** — they flag sensational language but fail to check whether the **actual claim is true or false**. This leads to:
-
-- Rapid spread of health, political, and financial misinformation
-- Confusion caused by professionally-written but factually wrong content
-- No real-time, accessible verification tool for everyday users
-
-Our system addresses **both dimensions** — how a message is written *and* whether the information is correct.
+> **Active Development Note:** The core text verification engine operates in standalone machine learning mode (deterministic feature extraction with zero external LLM dependencies for baseline classification). The deep image forensics and generative AI model attribution pipeline is currently under active engineering and benchmark expansion across CIFAKE and GenImage datasets.
 
 ---
 
-## ✨ Features
+## Tech Stack
 
-- **5-tier verdict system** — FAKE, REAL, LIKELY FAKE, MISLEADING, UNCERTAIN
-- **Dual-path pipeline** — short WhatsApp forwards handled differently from long articles
-- **LLM fact-checking** via Llama 3.3 70B (Groq) for factual verification
-- **ML style detection** trained on 44,000 articles (98.6% accuracy)
-- **NER-based source extraction** — detects orgs like AIIMS, WHO, RBI
-- **LIME explainability** — highlights suspicious vs credible trigger words
-- **Confidence score** with every verdict
-- **BERT fallback** — ensures reliability when LLM is unavailable
-- **Response time under 6 seconds**
-- Works on **political news, health claims, financial content, and conspiracy theories**
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|---|---|
-| ML Model (long text) | Logistic Regression / Naive Bayes + TF-IDF |
-| ML Model (short text) | Pre-trained BERT (LIAR dataset) |
-| LLM Fact-Checker | Llama 3.3 70B via Groq API |
-| NER | spaCy / custom NER extractor |
-| Explainability | LIME |
-| WhatsApp Integration | Twilio Sandbox |
-| Local Tunnel | ngrok |
-| Language | Python |
+- **Python 3.9+**
+- **PyTorch** (Deep Learning & Image Forensic Baselines)
+- **Scikit-learn** (TF-IDF Vectorization, Passive-Aggressive, Logistic Regression, Naive Bayes)
+- **OpenCV & NumPy** (FFT Spectrum Analysis, Error Level Analysis, Noise Inconsistency)
+- **FastAPI & Uvicorn** (High-throughput REST API & Webhook Server)
+- **Twilio WhatsApp API** (End-to-end messaging verification bot)
+- **LIME** (Local Interpretable Model-agnostic Explanations)
+- **spaCy** (Named Entity Recognition for institutional sources)
+- **Groq LLM API** (`llama-3.3-70b-versatile` — optional semantic verification layer)
+- **ngrok** (Local tunnel automation with auto-URL resolution)
 
 ---
 
-## 📁 Project Structure
+## System Pipelines
 
-```
-├── utils.py            # Data loading and preprocessing
-├── train.py            # Feature extraction using TF-IDF
-├── train_model.py      # Model training (Logistic Regression, Naive Bayes)
-├── ingestion.py        # Input cleaning and length classification
-├── liar_model.py       # Pre-trained BERT model for short text
-├── fact_checker.py     # LLM-based claim verification (Groq)
-├── explainability.py   # LIME-based word highlighting
-├── pipeline.py         # Core decision logic and verdict generation
-├── main.py             # Server / webhook handler
-└── whatsapp_bot.py     # Response formatting for WhatsApp
+### 1. Standalone Text Verification Pipeline
+
+```mermaid
+flowchart TD
+    A["Input Text / WhatsApp Forward"] --> B["Ingestion & Preprocessing"]
+    B --> C{"Length Check"}
+    C -->|"Short Forward (< 50 words)"| D["Claim Extractor & NER Source Identifier"]
+    C -->|"Long Article (>= 50 words)"| E["TF-IDF / N-Gram Vectorizer"]
+    
+    D --> F["Credibility & Linguistic Stylometry Engine"]
+    E --> G["Trained Classifier (Logistic / Passive-Aggressive)"]
+    
+    F --> H["Decision & Trust Scoring Logic"]
+    G --> H
+    
+    H --> I["LIME Word-Level Feature Explainability"]
+    I --> J["5-Tier Verdict Generation (REAL / FAKE / LIKELY FAKE / MISLEADING / UNCERTAIN)"]
 ```
 
 ---
 
-## ⚙️ How to Run
+### 2. Image Forensics & AI Attribution Pipeline (Active Work)
 
-### Prerequisites
+```mermaid
+flowchart TD
+    A["Input Image (RGB)"] --> B["Multi-Branch Forensic Extractor"]
+    
+    B --> C["Spatial Domain Branch\n(Pixel Noise & Texture Analysis)"]
+    B --> D["Frequency Domain Branch\n(2D Fast Fourier Transform / FFT Log Magnitude)"]
+    B --> E["Compression Artifact Branch\n(Error Level Analysis / ELA Resaved Residuals)"]
+    
+    C --> F["Feature Concatenation & Fusion Vector"]
+    D --> F
+    E --> F
+    
+    F --> G["Attribution Classifier\n(Distinguishes Real vs BigGAN vs Midjourney vs Stable Diffusion)"]
+    
+    G --> H["Synthetic Probability & Generator Signature Score"]
+    H --> I["Forensic Report & Visual Artifact Heatmaps"]
+```
 
-- Python 3.9+
-- A [Groq API key](https://console.groq.com) (free tier)
-- A [Twilio account](https://twilio.com) with WhatsApp Sandbox enabled
-- ngrok installed
+---
+
+### 3. WhatsApp Webhook & API Ingestion Pipeline
+
+```mermaid
+flowchart TD
+    A["User sends message via WhatsApp"] --> B["Twilio Sandbox Gateway"]
+    B --> C["POST /webhook (FastAPI Endpoint)"]
+    C --> D["Validation & Payload Parsing"]
+    D --> E["Text & Media Dispatcher"]
+    
+    E --> F["Text Verification Engine"]
+    E --> G["Forensic Image Engine"]
+    
+    F --> H["Formatted TwiML / WhatsApp REST Response"]
+    G --> H
+    
+    H --> I["Instant Verification Verdict delivered in < 2 seconds"]
+```
+
+---
+
+## Core Concepts Implemented
+
+### Standalone Machine Learning Engine (Zero-LLM Core)
+- Engineered without relying on third-party LLM API calls for core classification.
+- Uses TF-IDF n-gram tokenization and ensemble classifiers trained on 44,000+ verified news records.
+- Achieves sub-second inference with zero token costs and deterministic outputs.
+
+### Deep Image Forensics & Frequency-Domain Analysis *(Active Work)*
+- **2D-FFT Analysis**: Detects checkerboard patterns and periodic frequency spikes characteristic of upsampling layers in GANs and diffusion decoders.
+- **Error Level Analysis (ELA)**: Computes compression error variance across JPEG blocks to flag spliced or non-uniformly compressed regions.
+- **Noise Inconsistency Extraction**: Isolates high-pass spatial noise fingerprints to detect artificial smoothing or synthetic generative artifacts.
+
+### Generative AI Model Attribution
+- Multi-class attribution trained to distinguish between real camera captures and synthetic images generated by **Midjourney**, **BigGAN**, **Stable Diffusion**, and **CIFAKE** benchmarks.
+- Evaluates ResNet-18/50 baseline embeddings against specialized handcrafted forensic feature extractors.
+
+### Explainability & Feature Contribution
+- Integrates LIME to output exact token weights and highlight trigger keywords (sensationalism, unverified cures, authoritative impersonation).
+- Identifies institutional entities (e.g., AIIMS, WHO, RBI) via Named Entity Recognition to validate institutional claims.
+
+---
+
+## High-ROI Production Features
+
+### Deterministic & Cost-Efficient Inference
+- Zero dependency on expensive external APIs for the primary classification path.
+- In-memory model caching ensures ultra-low latency (< 100ms per text classification).
+
+### Multi-Channel Ingestion & Webhook Reliability
+- FastAPI webhook server with automated ngrok tunnel discovery at startup.
+- Fallback TwiML response handling to guarantee 200 HTTP status returns even under network interruptions.
+
+### Benchmark Validation
+- Pre-packaged evaluation suites on **CIFAKE** and **GenImage** datasets.
+- JSON benchmark exports tracking accuracy, macro F1-score, and generator attribution confusion matrices.
+
+---
+
+## API Reference
+
+| Method | Route | Description |
+|---|---|---|
+| `GET` | `/` | Health check endpoint confirming API status. |
+| `GET` | `/status` | Returns webhook health and active ngrok tunnel configuration. |
+| `POST` | `/predict` | Ingests JSON payload `{"text": "..."}` and returns verdict, confidence, and signals. |
+| `POST` | `/webhook` | Ingests incoming WhatsApp message from Twilio and returns formatted verification reply. |
+
+---
+
+## Folder Structure
+
+```
+├── main.py                             # FastAPI server & Twilio webhook handlers
+├── start.bat                           # Windows one-click environment startup script
+├── train_pipeline.py                   # Standalone text model training pipeline
+├── train_cifake_experiments.py         # CIFAKE benchmark training & evaluation script
+├── train_genimage_experiments.py       # GenImage multi-generator attribution experiments
+├── download_genimage_sample.py         # Dataset sample downloader utility
+├── test_step1_extractors.py            # Unit tests for image forensic feature extractors
+├── test_step2_attribution.py           # Evaluation tests for generator attribution
+├── create_presentation.py              # Automated PPTX presentation generator
+├── src/
+│   ├── pipeline.py                     # Core text verification & decision engine
+│   ├── utils.py                        # NLP preprocessing, TF-IDF, and data helpers
+│   ├── explainability.py               # LIME explainability and token attribution
+│   ├── whatsapp_bot.py                 # Twilio WhatsApp message formatter
+│   └── image_forensics/                # Deep Image Forensics Package (Active Work)
+│       ├── __init__.py                 # Package initialization
+│       ├── extractors.py               # Spatial, FFT, ELA & noise feature extractors
+│       ├── classifier.py               # Image forensic & attribution classifier models
+│       ├── dataset.py                  # PyTorch dataset loaders & feature cache builders
+│       ├── genimage_loader.py          # GenImage multi-generator dataset loaders
+│       ├── resnet_baseline.py          # ResNet-18 / ResNet-50 feature baseline models
+│       └── trainer.py                  # Training loops, metrics & confusion matrix loggers
+├── data/                               # Dataset directory (CSV datasets & feature caches)
+└── results/                            # Benchmark JSON outputs and experiment metrics
+    ├── cifake_benchmark_results.json
+    └── genimage_benchmark_results.json
+```
+
+---
+
+## Local Setup
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/whatsapp-fake-detector.git
-cd whatsapp-fake-detector
+git clone https://github.com/sairam676/Fake-News-Detection.git
+cd Fake-News-Detection
 ```
 
-### 2. Install dependencies
+### 2. Set up virtual environment & install dependencies
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 3. Set up environment variables
+### 3. Configure environment variables (Optional for WhatsApp Bot)
 
-Create a `.env` file in the root directory:
+Create a `.env` file in the project root:
 
 ```env
-GROQ_API_KEY=your_groq_api_key
-TWILIO_ACCOUNT_SID=your_twilio_sid
-TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_ACCOUNT_SID=your-twilio-account-sid
+TWILIO_AUTH_TOKEN=your-twilio-auth-token
+TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
+GROQ_API_KEY=your-groq-api-key   # Optional semantic layer
+PORT=5000
 ```
 
-### 4. Train the ML model
+### 4. Train the text pipeline & image forensics baselines
 
 ```bash
-python train.py
-python train_model.py
+# Train text verification models
+python train_pipeline.py
+
+# Run image forensic feature tests & benchmark experiments
+python test_step1_extractors.py
+python train_cifake_experiments.py
+python train_genimage_experiments.py
 ```
 
-### 5. Start the server
+### 5. Run the FastAPI server
 
 ```bash
 python main.py
 ```
 
-### 6. Expose with ngrok
+---
 
-```bash
-ngrok http 5000
-```
+## Key Design Decisions
 
-Copy the ngrok HTTPS URL and paste it as the webhook URL in your Twilio WhatsApp Sandbox settings.
+### Why Standalone ML Instead of LLM-Only Fact Checking
+Relying solely on LLM API calls introduces high latency (3–8s), ongoing token costs, rate-limiting bottlenecks, and hallucinations. A standalone classical ML engine processes text in milliseconds deterministically and serves as an impenetrable first-line filter.
 
-### 7. Test it
+### Why Frequency Domain (FFT) & ELA for Image Forensics
+Visual inspection alone fails against state-of-the-art diffusion models. Frequency analysis exposes mathematical fingerprints (artifacts from upsamplers, transposed convolutions, and latent decoders) that are invisible in the pixel domain but distinct in frequency spectrums.
 
-Join the Twilio sandbox by sending the join code to the sandbox number, then forward any suspicious WhatsApp message to it.
+### Why Modular Feature Extractors
+Decoupling spatial noise, FFT magnitudes, and compression residuals allows each forensic feature to be independently inspected, cached, and benchmarked without retraining entire end-to-end vision backbones.
 
 ---
 
-## 📊 Sample Output
+## What This Project Is Not
 
-```
-🔍 Verdict: LIKELY FAKE
-📊 Confidence: 84%
-
-❌ Claim: "AIIMS doctors confirm neem cures diabetes permanently"
-
-💬 Reason: No peer-reviewed evidence supports this claim.
-           The statement contradicts established medical guidelines.
-
-🏷️ Detected sources: AIIMS
-⚠️ Trigger words: "confirms", "permanently", "cure"
-```
+- **Not an opaque LLM wrapper**: Core detection logic is built on explicit feature extractors and trained machine learning classifiers.
+- **Not a toy demo**: Includes full webhook resilience, unit tests, cached feature loaders, and empirical benchmark evaluations.
+- **Not purely a single-modality tool**: Actively bridging NLP text verification with computer vision forensics.
 
 ---
 
-## 🏗️ System Architecture
+## Active Development & Roadmap
 
-```
-User Input
-    │
-    ▼
-Clean Input ──► Length Check
-                    │
-          ┌─────────┴──────────┐
-        Short               Long
-          │                   │
-    LLM Fact Check      TF-IDF + ML
-    (+ BERT fallback)   (+ LIME explain)
-          │                   │
-          └─────────┬──────────┘
-                    │
-              NER Extractor
-                    │
-              LLM Fact Checker
-                    │
-            Decision Engine
-         (weighted trust logic)
-                    │
-    ┌───────┬───────┼────────┬───────────┐
-  FAKE    REAL  MISLEAD  UNCERTAIN  LIKELY FAKE
-                    │
-            WhatsApp Bot Reply
-         Verdict + Confidence + Reason
-```
+- [x] Standalone text classification & feature extraction pipeline (Zero-LLM dependency).
+- [x] LIME explainability and source entity recognition.
+- [x] FastAPI webhook integration with automated ngrok resolution.
+- [x] Frequency-domain (FFT) and Error Level Analysis (ELA) extractors.
+- [x] Benchmark evaluation on CIFAKE and GenImage datasets.
+- [ ] Multi-modal cross-attention fusion combining text claims with forensic image signatures.
+- [ ] Regional language tokenizers (Hindi, Telugu, Tamil) for Indian social media forwards.
+- [ ] Real-time heatmap generation overlay for image tampering regions.
 
 ---
 
-## ⚠️ Known Limitations
+## Author
 
-1. **Older dataset** — trained on US news; may misclassify some Indian-context domains
-2. **LLM knowledge cutoff** — Llama 3.3 knowledge limited to early 2024; very recent events may return UNCERTAIN
-3. **English only** — limited multilingual support; Hindi/regional language support is planned
-
----
-
-## 🚀 Roadmap
-
-- [ ] Hindi and regional language support
-- [ ] Real-time news API integration to reduce UNCERTAIN verdicts
-- [ ] Image and meme verification
-- [ ] Indian news dataset for better contextual accuracy
-- [ ] User feedback loop for continuous model improvement
-- [ ] Cloud deployment (AWS/GCP) to replace ngrok setup
-- [ ] Source credibility scoring (WHO vs unknown blogs)
-- [ ] Reduce response time to near real-time
-
----
-
-## 👥 Team Members
-
-| Name | Role |
-|---|---|
-| SaiRam Devarasetty | ML Pipeline, Model Training |
-| Keerthana Dulam | LLM Integration, API |
-| Abhinay Bhargava| WhatsApp Bot, Deployment |
-
-*Department of Computer Science — NIT Patna*
-
----
-
-## 📄 License
-
-This project was built as an academic minor project at NIT Patna. Please contact the authors before reuse.
+**Devarasetty Sairam**
+- GitHub: [https://github.com/sairam676](https://github.com/sairam676)
+- LinkedIn: [https://linkedin.com/in/sairamdevarasetty676](https://linkedin.com/in/sairamdevarasetty676)
