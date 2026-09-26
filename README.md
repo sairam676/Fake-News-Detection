@@ -194,8 +194,8 @@ Create a `.env` file in the project root:
 ```env
 TWILIO_ACCOUNT_SID=your-twilio-account-sid
 TWILIO_AUTH_TOKEN=your-twilio-auth-token
-TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
-GROQ_API_KEY=your-groq-api-key   # Optional semantic layer
+TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886  # Twilio Sandbox Number
+GROQ_API_KEY=your-groq-api-key              # Optional semantic layer
 PORT=5000
 ```
 
@@ -253,8 +253,17 @@ Decoupling spatial noise, FFT magnitudes, and compression residuals allows each 
 
 ---
 
-## Author
+## Project Team & Supervision
 
-**Devarasetty Sairam**
-- GitHub: [https://github.com/sairam676](https://github.com/sairam676)
-- LinkedIn: [https://linkedin.com/in/sairamdevarasetty676](https://linkedin.com/in/sairamdevarasetty676)
+### Presented by
+- **Sairam Devarasetty**
+  - GitHub: [https://github.com/sairam676](https://github.com/sairam676)
+  - LinkedIn: [https://linkedin.com/in/sairamdevarasetty676](https://linkedin.com/in/sairamdevarasetty676)
+- **Sai Keerthana Dulam**
+- **Abhinay Bhargava Pachala**
+
+### Supervision & Institution
+- **Project Guide:** Dr. Anil Kumar Dudyala *(Assistant Professor)*
+- **Department:** Department of Computer Science and Engineering
+- **Institution:** National Institute of Technology Patna (NIT Patna)
+- **Academic Year:** 2025–2026
