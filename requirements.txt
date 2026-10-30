@@ -8,6 +8,8 @@ matplotlib
 # NLP + Transformers
 transformers
 torch
+torchvision
+pillow
 datasets
 lime
 sentencepiece
@@ -17,6 +19,7 @@ fastapi
 uvicorn
 python-dotenv
 groq
+httpx
 
 # WhatsApp
 twilio

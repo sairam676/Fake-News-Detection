@@ -20,7 +20,7 @@ import os
 import sys
 import httpx
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, UploadFile, File
 from fastapi.responses import Response, JSONResponse
 from dotenv import load_dotenv
 
@@ -29,6 +29,8 @@ load_dotenv()
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
 
 from pipeline import run
+from image_forensics.pipeline import predict_image
+from whatsapp_bot import format_image_reply
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
 
@@ -121,30 +123,79 @@ async def predict(request: Request):
     return result
 
 
+@app.post("/predict-image")
+async def predict_image_endpoint(file: UploadFile = File(...)):
+    """
+    Direct API endpoint to test image authenticity and generator attribution.
+    Accepts multipart image file upload.
+    """
+    try:
+        content = await file.read()
+        if not content:
+            return JSONResponse({"error": "Empty file uploaded"}, status_code=400)
+        result = predict_image(content)
+        return result
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
 # ── WhatsApp Webhook (Twilio) ─────────────────────────────────────────────────
 
 @app.post("/webhook")
-async def webhook(Body: str = Form(...), From: str = Form(...)):
+async def webhook(
+    Body: str = Form(""),
+    From: str = Form(...),
+    NumMedia: int = Form(0),
+    MediaUrl0: str = Form(None),
+    MediaContentType0: str = Form(None),
+):
     """
-    Twilio sends POST here when user sends a WhatsApp message.
+    Twilio sends POST here when user sends a WhatsApp message or image.
 
     Strategy:
-      1. Try to reply via Twilio REST API (cleaner, no XML in chat).
-      2. If REST API fails (e.g. bad credentials), fall back to TwiML response.
-      3. Always return HTTP 200 — if we return non-200, Twilio retries endlessly.
+      1. If image is attached (NumMedia > 0), download and analyze with Multi-Branch Image Forensics.
+      2. If text message, run text fake news NLP pipeline.
+      3. If both (image + caption), analyze both and combine results.
+      4. Reply via Twilio REST API (with TwiML fallback). Always return HTTP 200.
     """
-    print(f"\n[webhook] ← Message from {From}")
+    print(f"\n[webhook] <-- Message from {From}")
     print(f"[webhook]   Body: {Body[:80]}{'...' if len(Body) > 80 else ''}")
+    print(f"[webhook]   Media attached: {NumMedia} (URL: {MediaUrl0})")
 
-    # Run the fake news pipeline
-    try:
-        result = run(Body)
-        reply  = _format_whatsapp_reply(result)
-    except Exception as e:
-        print(f"[webhook] Pipeline error: {e}")
-        reply = "Sorry, something went wrong processing your message. Please try again."
+    has_image = bool(NumMedia and int(NumMedia) > 0 and MediaUrl0)
 
-    print(f"[webhook] → Verdict: {result.get('verdict', 'ERROR')} ({result.get('confidence', '?')})")
+    if has_image:
+        print(f"[webhook] [IMAGE] Processing incoming image ({MediaContentType0})...")
+        try:
+            async with httpx.AsyncClient() as client:
+                auth = (ACCOUNT_SID, AUTH_TOKEN) if (ACCOUNT_SID and AUTH_TOKEN) else None
+                r = await client.get(MediaUrl0, auth=auth, timeout=25.0, follow_redirects=True)
+                img_bytes = r.content
+
+            img_result = predict_image(img_bytes)
+            reply = format_image_reply(img_result)
+            print(f"[webhook] --> Image Verdict: {img_result.get('verdict')} ({img_result.get('confidence')})")
+
+            # If user also provided a text caption with the image
+            if Body and Body.strip():
+                try:
+                    text_result = run(Body)
+                    caption_reply = _format_whatsapp_reply(text_result)
+                    reply += "\n\n📝 *CAPTION FACT CHECK:*\n" + caption_reply
+                except Exception as ex:
+                    print(f"[webhook] Caption analysis error: {ex}")
+        except Exception as e:
+            print(f"[webhook] Image processing error: {e}")
+            reply = f"❌ Sorry, could not process the image: {e}"
+    else:
+        # Standard text message
+        try:
+            result = run(Body)
+            reply = _format_whatsapp_reply(result)
+            print(f"[webhook] --> Text Verdict: {result.get('verdict', 'ERROR')} ({result.get('confidence', '?')})")
+        except Exception as e:
+            print(f"[webhook] Pipeline error: {e}")
+            reply = "Sorry, something went wrong processing your message. Please try again."
 
     # Strategy 1: Send via Twilio REST API
     rest_ok = False
@@ -156,13 +207,13 @@ async def webhook(Body: str = Form(...), From: str = Form(...)):
                 to    = From,
                 body  = reply
             )
-            print("[webhook] ✅ Reply sent via REST API.")
+            print("[webhook] [OK] Reply sent via REST API.")
             rest_ok = True
         except Exception as e:
-            print(f"[webhook] ⚠️  REST API failed: {e}")
-            print(f"[webhook]    Falling back to TwiML response...")
+            print(f"[webhook] [!] REST API failed: {e}")
+            print(f"[webhook]     Falling back to TwiML response...")
     else:
-        print("[webhook] ⚠️  Twilio credentials not set — using TwiML fallback.")
+        print("[webhook] [!] Twilio credentials not set — using TwiML fallback.")
 
     # Strategy 2 (fallback): Reply via TwiML
     twiml = MessagingResponse()

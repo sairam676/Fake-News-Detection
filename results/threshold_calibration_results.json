@@ -1,0 +1,51 @@
+{
+  "candidate_thresholds": [
+    {
+      "threshold": 0.4,
+      "accepted": 200,
+      "coverage_pct": 100.0,
+      "errors": 14,
+      "error_rate": 7.000000000000001,
+      "accepted_acc": 93.0
+    },
+    {
+      "threshold": 0.5,
+      "accepted": 195,
+      "coverage_pct": 97.5,
+      "errors": 13,
+      "error_rate": 6.666666666666667,
+      "accepted_acc": 93.33333333333333
+    },
+    {
+      "threshold": 0.6,
+      "accepted": 189,
+      "coverage_pct": 94.5,
+      "errors": 11,
+      "error_rate": 5.82010582010582,
+      "accepted_acc": 94.17989417989418
+    },
+    {
+      "threshold": 0.7,
+      "accepted": 185,
+      "coverage_pct": 92.5,
+      "errors": 11,
+      "error_rate": 5.9459459459459465,
+      "accepted_acc": 94.05405405405406
+    },
+    {
+      "threshold": 0.8,
+      "accepted": 89,
+      "coverage_pct": 44.5,
+      "errors": 5,
+      "error_rate": 5.617977528089887,
+      "accepted_acc": 94.3820224719101
+    }
+  ],
+  "selected_optimal_threshold": 0.7,
+  "untouched_test_metrics": {
+    "raw_accuracy": 90.5,
+    "accepted_accuracy": 93.01075268817203,
+    "coverage_pct": 93.0,
+    "abstained_count": 14
+  }
+}

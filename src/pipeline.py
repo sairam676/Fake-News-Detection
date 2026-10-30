@@ -2,7 +2,7 @@
 pipeline.py  — FINAL VERSION
 -----------------------------
 All fixes applied:
-  1. _detect_category: correct order fake_pattern → health → politics → out_of_scope
+  1. _detect_category: correct order fake_pattern -> health -> politics -> out_of_scope
      + expanded FAKE_PATTERNS to match real WhatsApp forwards
   2. _short_text_rule_check: fires for both "health" and "fake_pattern" categories
   3. LIME noise words: stopwords + Indian proper nouns filtered from word_highlights
@@ -106,7 +106,7 @@ LIME_NOISE_WORDS = {
 
 
 # ── Category detection ────────────────────────────────────────────────────────
-# Order matters: fake_pattern → health → politics → out_of_scope
+# Order matters: fake_pattern -> health -> politics -> out_of_scope
 
 def _detect_category(text: str) -> str:
     t = text.lower()
@@ -422,7 +422,7 @@ def run(raw_input: str) -> dict:
 
     print("[pipeline] Step 2: Running ML Ensemble...")
     ml_result = _run_ml(text)
-    print(f"           Ensemble → {ml_result['label']} (conf={ml_result['confidence']})")
+    print(f"           Ensemble -> {ml_result['label']} (conf={ml_result['confidence']})")
 
     print("[pipeline] Step 3: Extracting sources via NER...")
     sources = _extract_sources(text)
@@ -442,7 +442,7 @@ def run(raw_input: str) -> dict:
     if input_type == "short_forward":
         rule_decision = _short_text_rule_check(text, category)
         if rule_decision:
-            print(f"           Rules fired → {rule_decision['verdict']} (overrides ML)")
+            print(f"           Rules fired -> {rule_decision['verdict']} (overrides ML)")
 
     decision = rule_decision if rule_decision else _decide(ml_result, text, category)
 
@@ -484,7 +484,7 @@ def print_result(result: dict):
     print(f"\n  Sources     : {result['sources'] or 'None found'}")
     print(f"\n  Model scores:")
     for name, res in result["model_scores"].items():
-        print(f"    {name:<15} → {res['label']} (score={res['score']})")
+        print(f"    {name:<15} -> {res['label']} (score={res['score']})")
     if "word_highlights" in result:
         fake_words = [w for w, _ in result["word_highlights"]["fake_words"]]
         real_words = [w for w, _ in result["word_highlights"]["real_words"]]
